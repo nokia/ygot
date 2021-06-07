@@ -1599,7 +1599,7 @@ func writeGoStruct(targetStruct *Directory, goStructElements map[string]*Directo
 
 		if fieldDef.IsYANGContainer {
 			if len(field.Extra["presence"]) != 0 && !reflect.ValueOf(field.Extra["presence"][0]).IsNil() {
-				tagBuf.WriteString(fmt.Sprintf(` presence:"true"`))
+				tagBuf.WriteString(` presence:"true"`)
 			}
 		}
 
