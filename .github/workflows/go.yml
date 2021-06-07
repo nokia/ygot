@@ -2,7 +2,7 @@ name: Go
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, presence_container ]
   pull_request:
   schedule:
     - cron: "0 0 * * *"
