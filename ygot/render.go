@@ -1071,17 +1071,14 @@ func structJSON(s GoStruct, parentMod string, args jsonOutputConfig) (map[string
 			continue
 		}
 
-		var isPresenceContainer bool
 		if value == nil {
-			if _, isPresenceContainer = fType.Tag.Lookup("presence"); isPresenceContainer {
-				value = make(map[string]interface{})
-			} else {
-				continue
-			}
+			continue
 		}
 
-		if mp, ok := value.(map[string]interface{}); ok && len(mp) == 0 && !isPresenceContainer {
-			continue
+		if mp, ok := value.(map[string]interface{}); ok && len(mp) == 0 {
+			if _, isPresenceContainer := fType.Tag.Lookup("presence"); !isPresenceContainer {
+				continue
+			}
 		}
 
 		for _, p := range mapPaths {
