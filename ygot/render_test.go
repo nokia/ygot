@@ -1805,6 +1805,13 @@ type diffModAtRootElemTwo struct {
 
 func (*diffModAtRootElemTwo) IsYANGGoStruct() {}
 
+// Type to test YANG container with presence statement
+type routerPresenceExample struct {
+	Bgp *exampleBgp `path:"bgp" presence:"true"`
+}
+
+func (*routerPresenceExample) IsYANGGoStruct() {}
+
 type annotatedJSONTestStruct struct {
 	Field       *string      `path:"field"            module:"bar"`
 	ΛField      []Annotation `path:"@field"                        ygotAnnotation:"true"`
@@ -2243,6 +2250,14 @@ func TestConstructJSON(t *testing.T) {
 				},
 			},
 		},
+	}, {
+		name: "presence container example",
+		in: &routerPresenceExample{
+			Bgp: &exampleBgp{}},
+		wantIETF: map[string]interface{}{
+			"bgp": map[string]interface{}{},
+		},
+		wantSame: true,
 	}, {
 		name: "union leaf-list example",
 		in: &exampleBgpNeighbor{

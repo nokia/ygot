@@ -1088,7 +1088,9 @@ func structJSON(s GoStruct, parentMod string, args jsonOutputConfig) (map[string
 		}
 
 		if mp, ok := value.(map[string]interface{}); ok && len(mp) == 0 {
-			continue
+			if _, isPresenceContainer := fType.Tag.Lookup("presence"); !isPresenceContainer {
+				continue
+			}
 		}
 
 		for _, p := range mapPaths {
@@ -1106,6 +1108,8 @@ func structJSON(s GoStruct, parentMod string, args jsonOutputConfig) (map[string
 						}
 						jsonout[k] = mv
 					}
+					// TODO(ythadhani) Empty path not supported for empty presence
+					// container (if none of the child nodes are assigned values)
 				} else {
 					errs.Add(fmt.Errorf("empty path specified for non-root entity"))
 					continue

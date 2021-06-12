@@ -17,6 +17,7 @@ package ygen
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 	"sort"
 	"strings"
 	"text/template"
@@ -1614,6 +1615,12 @@ func writeGoStruct(
 			log.Infof("field %s has a nil module, error discarded", field.Path())
 		} else {
 			tagBuf.WriteString(fmt.Sprintf(` module:"%s"`, im))
+		}
+
+		if fieldDef.IsYANGContainer {
+			if len(field.Extra["presence"]) != 0 && !reflect.ValueOf(field.Extra["presence"][0]).IsNil() {
+				tagBuf.WriteString(` presence:"true"`)
+			}
 		}
 
 		fieldDef.Tags = tagBuf.String()
