@@ -104,13 +104,15 @@ func TestGoCodeStructGeneration(t *testing.T) {
 		inGoOpts: GoOpts{
 			GenerateJSONSchema:   true,
 			ValidateFunctionName: "ValidateProxyFunction",
+			GenerateXMLTag:       true,
+			GenerateJSONTag:      true,
 		},
 		want: wantGoStructOut{
 			structs: `
 // Tstruct represents the /root-module/tstruct YANG schema element.
 type Tstruct struct {
-	F1	*int8	` + "`" + `path:"f1" module:"exmod"` + "`" + `
-	F2	[]string	` + "`" + `path:"f2" module:"exmod"` + "`" + `
+	F1	*int8	` + "`" + `path:"f1" module:"exmod" json:"f1,omitempty" xml:"f1"` + "`" + `
+	F2	[]string	` + "`" + `path:"f2" module:"exmod" json:"f2,omitempty" xml:"f2"` + "`" + `
 }
 
 // IsYANGGoStruct ensures that Tstruct implements the yang.GoStruct
@@ -199,13 +201,15 @@ func (*Tstruct) ΛBelongingModule() string {
 		inGoOpts: GoOpts{
 			GenerateJSONSchema:      true,
 			IgnoreShadowSchemaPaths: true,
+			GenerateXMLTag:          true,
+			GenerateJSONTag:         true,
 		},
 		want: wantGoStructOut{
 			structs: `
 // Tstruct represents the /root-module/tstruct YANG schema element.
 type Tstruct struct {
-	F1	*int8	` + "`" + `path:"f1" module:"exmod"` + "`" + `
-	F2	[]string	` + "`" + `path:"f2" module:"exmod" shadow-path:"g2" shadow-module:"exmod2"` + "`" + `
+	F1	*int8	` + "`" + `path:"f1" module:"exmod" json:"f1,omitempty" xml:"f1"` + "`" + `
+	F2	[]string	` + "`" + `path:"f2" module:"exmod" json:"f2,omitempty" xml:"f2" shadow-path:"g2" shadow-module:"exmod2"` + "`" + `
 }
 
 // IsYANGGoStruct ensures that Tstruct implements the yang.GoStruct
@@ -273,12 +277,14 @@ func (*Tstruct) ΛBelongingModule() string {
 		},
 		inGoOpts: GoOpts{
 			GenerateJSONSchema: true,
+			GenerateXMLTag:     true,
+			GenerateJSONTag:    true,
 		},
 		want: wantGoStructOut{
 			structs: `
 // InputStruct represents the /module/input-struct YANG schema element.
 type InputStruct struct {
-	U1	InputStruct_U1_Union	` + "`" + `path:"u1" module:"exmod"` + "`" + `
+	U1	InputStruct_U1_Union	` + "`" + `path:"u1" module:"exmod" json:"u1,omitempty" xml:"u1"` + "`" + `
 }
 
 // IsYANGGoStruct ensures that InputStruct implements the yang.GoStruct
@@ -382,12 +388,14 @@ func (t *InputStruct) To_InputStruct_U1_Union(i interface{}) (InputStruct_U1_Uni
 		},
 		inGoOpts: GoOpts{
 			GenerateJSONSchema: true,
+			GenerateXMLTag:     true,
+			GenerateJSONTag:    true,
 		},
 		want: wantGoStructOut{
 			structs: `
 // InputStruct represents the /root-module/input-struct YANG schema element.
 type InputStruct struct {
-	C1	*InputStruct_C1	` + "`" + `path:"c1" module:"exmod"` + "`" + `
+	C1	*InputStruct_C1	` + "`" + `path:"c1" module:"exmod" json:"c1,omitempty" xml:"c1"` + "`" + `
 }
 
 // IsYANGGoStruct ensures that InputStruct implements the yang.GoStruct
@@ -452,12 +460,14 @@ func (*InputStruct) ΛBelongingModule() string {
 		inGoOpts: GoOpts{
 			GenerateJSONSchema: true,
 			AddYangPresence:    true,
+			GenerateXMLTag:     true,
+			GenerateJSONTag:    true,
 		},
 		want: wantGoStructOut{
 			structs: `
 // InputStruct represents the /root-module/input-struct YANG schema element.
 type InputStruct struct {
-	C1	*InputStruct_C1	` + "`" + `path:"c1" module:"exmod" yangPresence:"true"` + "`" + `
+	C1	*InputStruct_C1	` + "`" + `path:"c1" module:"exmod" json:"c1,omitempty" xml:"c1" yangPresence:"true"` + "`" + `
 }
 
 // IsYANGGoStruct ensures that InputStruct implements the yang.GoStruct
@@ -570,12 +580,14 @@ func (*InputStruct) ΛBelongingModule() string {
 		},
 		inGoOpts: GoOpts{
 			GenerateJSONSchema: true,
+			GenerateXMLTag:     true,
+			GenerateJSONTag:    true,
 		},
 		want: wantGoStructOut{
 			structs: `
 // QStruct represents the /root-module/q-struct YANG schema element.
 type QStruct struct {
-	AList	[]*QStruct_AList	` + "`" + `path:"a-list" module:"exmod"` + "`" + `
+	AList	[]*QStruct_AList	` + "`" + `path:"a-list" module:"exmod" json:"aList,omitempty" xml:"a-list"` + "`" + `
 }
 
 // IsYANGGoStruct ensures that QStruct implements the yang.GoStruct
@@ -673,12 +685,14 @@ func (*QStruct) ΛBelongingModule() string {
 		inGoOpts: GoOpts{
 			GenerateJSONSchema:   true,
 			GenerateRenameMethod: true,
+			GenerateXMLTag:       true,
+			GenerateJSONTag:      true,
 		},
 		want: wantGoStructOut{
 			structs: `
 // Tstruct represents the /root-module/tstruct YANG schema element.
 type Tstruct struct {
-	ListWithKey	map[string]*ListWithKey	` + "`" + `path:"listWithKey" module:"exmod"` + "`" + `
+	ListWithKey	map[string]*ListWithKey	` + "`" + `path:"listWithKey" module:"exmod" json:"listWithKey,omitempty" xml:"list-with-key"` + "`" + `
 }
 
 // IsYANGGoStruct ensures that Tstruct implements the yang.GoStruct
@@ -915,12 +929,14 @@ func (*Tstruct) ΛBelongingModule() string {
 		inGoOpts: GoOpts{
 			GenerateJSONSchema:   true,
 			GenerateRenameMethod: true,
+			GenerateXMLTag:       true,
+			GenerateJSONTag:      true,
 		},
 		want: wantGoStructOut{
 			structs: `
 // Tstruct represents the /root-module/tstruct YANG schema element.
 type Tstruct struct {
-	ListWithKey	map[Tstruct_ListWithKey_Key]*Tstruct_ListWithKey	` + "`" + `path:"listWithKey" module:"exmod"` + "`" + `
+	ListWithKey	map[Tstruct_ListWithKey_Key]*Tstruct_ListWithKey	` + "`" + `path:"listWithKey" module:"exmod" json:"listWithKey,omitempty" xml:"list-with-key"` + "`" + `
 }
 
 // IsYANGGoStruct ensures that Tstruct implements the yang.GoStruct
@@ -1055,13 +1071,15 @@ func (*Tstruct) ΛBelongingModule() string {
 			GenerateJSONSchema:  true,
 			AddAnnotationFields: true,
 			AnnotationPrefix:    "Ω",
+			GenerateXMLTag:      true,
+			GenerateJSONTag:     true,
 		},
 		want: wantGoStructOut{
 			structs: `
 // Tstruct represents the /root-module/tstruct YANG schema element.
 type Tstruct struct {
 	ΩMetadata	[]ygot.Annotation	` + "`" + `path:"@" ygotAnnotation:"true"` + "`" + `
-	F1	*int8	` + "`" + `path:"f1" module:"exmod"` + "`" + `
+	F1	*int8	` + "`" + `path:"f1" module:"exmod" json:"f1,omitempty" xml:"f1"` + "`" + `
 	ΩF1	[]ygot.Annotation	` + "`" + `path:"@f1" ygotAnnotation:"true"` + "`" + `
 }
 
@@ -1190,12 +1208,14 @@ func (*Tstruct) ΛBelongingModule() string {
 			GenerateAppendMethod: true,
 			GenerateGetters:      true,
 			GenerateDeleteMethod: true,
+			GenerateXMLTag:       true,
+			GenerateJSONTag:      true,
 		},
 		want: wantGoStructOut{
 			structs: `
 // Tstruct represents the /root-module/tstruct YANG schema element.
 type Tstruct struct {
-	ListWithKey	map[Tstruct_ListWithKey_Key]*Tstruct_ListWithKey	` + "`" + `path:"listWithKey" module:"exmod"` + "`" + `
+	ListWithKey	map[Tstruct_ListWithKey_Key]*Tstruct_ListWithKey	` + "`" + `path:"listWithKey" module:"exmod" json:"listWithKey,omitempty" xml:"list-with-key"` + "`" + `
 }
 
 // IsYANGGoStruct ensures that Tstruct implements the yang.GoStruct
@@ -1434,12 +1454,14 @@ func (*Tstruct) ΛBelongingModule() string {
 			GenerateGetters:         true,
 			GenerateDeleteMethod:    true,
 			GeneratePopulateDefault: true,
+			GenerateXMLTag:          true,
+			GenerateJSONTag:         true,
 		},
 		want: wantGoStructOut{
 			structs: `
 // Tstruct represents the /root-module/tstruct YANG schema element.
 type Tstruct struct {
-	ListWithKey	map[string]*Tstruct_ListWithKey	` + "`" + `path:"listWithKey" module:"exmod"` + "`" + `
+	ListWithKey	map[string]*Tstruct_ListWithKey	` + "`" + `path:"listWithKey" module:"exmod" json:"listWithKey,omitempty" xml:"list-with-key"` + "`" + `
 }
 
 // IsYANGGoStruct ensures that Tstruct implements the yang.GoStruct
@@ -1615,12 +1637,14 @@ func (*Tstruct) ΛBelongingModule() string {
 			GenerateJSONSchema:      true,
 			GenerateGetters:         true,
 			GeneratePopulateDefault: true,
+			GenerateXMLTag:          true,
+			GenerateJSONTag:         true,
 		},
 		want: wantGoStructOut{
 			structs: `
 // InputStruct represents the /root-module/input-struct YANG schema element.
 type InputStruct struct {
-	C1	*InputStruct_C1	` + "`" + `path:"c1" module:"exmod"` + "`" + `
+	C1	*InputStruct_C1	` + "`" + `path:"c1" module:"exmod" json:"c1,omitempty" xml:"c1"` + "`" + `
 }
 
 // IsYANGGoStruct ensures that InputStruct implements the yang.GoStruct
@@ -1714,12 +1738,14 @@ func (*InputStruct) ΛBelongingModule() string {
 			GenerateJSONSchema:      true,
 			GenerateLeafGetters:     true,
 			GeneratePopulateDefault: true,
+			GenerateXMLTag:          true,
+			GenerateJSONTag:         true,
 		},
 		want: wantGoStructOut{
 			structs: `
 // Container represents the /m1/foo YANG schema element.
 type Container struct {
-	Leaf	*string	` + "`" + `path:"bar/leaf" module:"m1/m1"` + "`" + `
+	Leaf	*string	` + "`" + `path:"bar/leaf" module:"m1/m1" json:"leaf,omitempty" xml:"leaf"` + "`" + `
 }
 
 // IsYANGGoStruct ensures that Container implements the yang.GoStruct
@@ -1808,12 +1834,14 @@ func (*Container) ΛBelongingModule() string {
 			GenerateJSONSchema:      true,
 			GenerateLeafGetters:     true,
 			GeneratePopulateDefault: true,
+			GenerateXMLTag:          true,
+			GenerateJSONTag:         true,
 		},
 		want: wantGoStructOut{
 			structs: `
 // Container represents the /m1/foo YANG schema element.
 type Container struct {
-	Leaf	*string	` + "`" + `path:"bar/leaf" module:"m1/m1"` + "`" + `
+	Leaf	*string	` + "`" + `path:"bar/leaf" module:"m1/m1" json:"leaf,omitempty" xml:"leaf"` + "`" + `
 }
 
 // IsYANGGoStruct ensures that Container implements the yang.GoStruct
@@ -2032,7 +2060,8 @@ func (t *Container) To_Container_U1_Union(i interface{}) (Container_U1_Union, er
 			tt.inOtherStructMap[tt.inStructToMap.Path] = tt.inStructToMap
 			// Always generate the JSON schema for this test.
 			generatedUnions := map[string]bool{}
-			got, errs := writeGoStruct(tt.inStructToMap, tt.inOtherStructMap, generatedUnions, tt.inGoOpts)
+			mapper := NewGoLangMapper(true, "_", false)
+			got, errs := writeGoStruct(tt.inStructToMap, tt.inOtherStructMap, generatedUnions, tt.inGoOpts, []*goStructField{}, mapper, "namespace")
 
 			if len(errs) != 0 && !tt.want.wantErr {
 				t.Fatalf("%s writeGoStruct(targetStruct: %v): received unexpected errors: %v",
@@ -2076,6 +2105,14 @@ func (t *Container) To_Container_U1_Union(i interface{}) (Container_U1_Union, er
 
 			if diff := pretty.Compare(tt.want.interfaces, got.Interfaces); diff != "" {
 				if diffl, err := testutil.GenerateUnifiedDiff(tt.want.interfaces, got.Interfaces); err == nil {
+					diff = diffl
+				}
+				t.Errorf("%s: writeGoStruct(targetStruct: %v): interfaces generated for struct incorrect, diff (-want, +got):\n%s",
+					tt.name, tt.inStructToMap, diff)
+			}
+
+			if diff := pretty.Compare("namespace", got.Namespace); diff != "" {
+				if diffl, err := testutil.GenerateUnifiedDiff("namespace", got.Interfaces); err == nil {
 					diff = diffl
 				}
 				t.Errorf("%s: writeGoStruct(targetStruct: %v): interfaces generated for struct incorrect, diff (-want, +got):\n%s",
@@ -2160,7 +2197,7 @@ func TestGenGoEnumeratedTypes(t *testing.T) {
 	}}
 
 	for _, tt := range tests {
-		got, err := genGoEnumeratedTypes(tt.in)
+		got, err := genGoEnumeratedTypes(tt.in, false)
 		if err != nil {
 			t.Errorf("%s: genGoEnumeratedTypes(%v): got unexpected error: %v",
 				tt.name, tt.in, err)
@@ -2226,7 +2263,7 @@ const (
 	}}
 
 	for _, tt := range tests {
-		got, err := writeGoEnum(tt.in)
+		got, err := writeGoEnum(tt.in, "_")
 		if err != nil {
 			t.Errorf("%s: writeGoEnum(%v): got unexpected error: %v",
 				tt.name, tt.in, err)
@@ -2303,7 +2340,7 @@ var ΛEnum = map[string]map[int64]ygot.EnumDefinition{
 	}}
 
 	for _, tt := range tests {
-		got, err := writeGoEnumMap(tt.inMap)
+		got, err := writeGoEnumMap(tt.inMap, "_")
 
 		if err != nil {
 			if !tt.wantErr {
@@ -2362,7 +2399,7 @@ func TestGoLeafDefaults(t *testing.T) {
 		name:   "enumerated default in leaf",
 		inLeaf: &yang.Entry{Default: []string{"FORTY_TWO"}},
 		inType: &ygen.MappedType{
-			NativeType:        fmt.Sprintf("%sEnumType", goEnumPrefix),
+			NativeType:        fmt.Sprintf("%sEnumType", MakeGoEnumPrefix("_")),
 			IsEnumeratedValue: true,
 		},
 		want: []string{"EnumType_FORTY_TWO"},
@@ -2370,7 +2407,7 @@ func TestGoLeafDefaults(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := goLeafDefaults(tt.inLeaf, tt.inType)
+			got := goLeafDefaults(tt.inLeaf, tt.inType, "E_", "_")
 			if diff := cmp.Diff(tt.want, got); diff != "" {
 				t.Fatalf("did not get expected default, (-want, +got):\n%s", diff)
 			}

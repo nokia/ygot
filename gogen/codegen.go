@@ -3,6 +3,7 @@ package gogen
 
 import (
 	"fmt"
+	"github.com/openconfig/goyang/pkg/yang"
 	"sort"
 	"strings"
 
@@ -119,6 +120,17 @@ type GoOpts struct {
 	// compression is enabled, that the shadowed paths are to be ignored
 	// while while unmarshalling.
 	IgnoreShadowSchemaPaths bool
+
+	GenerateUnionsNoInterface bool    //TODO new
+	GenerateUnionsIntOrString bool    //TODO new
+	GenerateEnumsString       bool    //TODO new
+	GenerateXMLTag            bool    //TODO new
+	GenerateJSONTag           bool    //TODO new
+	NameDelimiter             *string //TODO new
+	GenerateListMemberAsList  bool    //TODO new
+	SeparateStatus            bool    //TODO new
+	StatusPostFix             *string //TODO new
+	HeaderComment             string  //TODO new
 }
 
 // GeneratedCode contains generated code snippets that can be processed by the calling
@@ -200,6 +212,10 @@ func checkForBinaryKeys(dir *ygen.ParsedDirectory) []error {
 //
 // If errors are encountered during code generation, an error is returned.
 func (cg *CodeGenerator) Generate(yangFiles, includePaths []string) (*GeneratedCode, util.Errors) {
+	return cg.GenerateWithModules(yangFiles, includePaths, nil)
+}
+
+func (cg *CodeGenerator) GenerateWithModules(yangFiles, includePaths []string, modules *yang.Modules) (*GeneratedCode, util.Errors) {
 	opts := ygen.IROptions{
 		ParseOptions:                        cg.IROptions.ParseOptions,
 		TransformationOptions:               cg.IROptions.TransformationOptions,
@@ -209,7 +225,13 @@ func (cg *CodeGenerator) Generate(yangFiles, includePaths []string) (*GeneratedC
 	}
 
 	var codegenErr util.Errors
-	ir, err := ygen.GenerateIR(yangFiles, includePaths, NewGoLangMapper(cg.GoOptions.GenerateSimpleUnions), opts)
+	nameDelimiter := "_"
+	if cg.GoOptions.NameDelimiter != nil {
+		nameDelimiter = *cg.GoOptions.NameDelimiter
+	}
+	mapper := NewGoLangMapper(cg.GoOptions.GenerateSimpleUnions || cg.GoOptions.GenerateUnionsIntOrString, nameDelimiter, cg.GoOptions.GenerateEnumsString)
+
+	ir, err := ygen.GenerateIR(yangFiles, includePaths, mapper, opts)
 	if err != nil {
 		return nil, util.AppendErr(codegenErr, err)
 	}
@@ -243,18 +265,55 @@ func (cg *CodeGenerator) Generate(yangFiles, includePaths []string) (*GeneratedC
 		return ok
 	}
 
+	if cg.GoOptions.SeparateStatus {
+		statusPostFix := igenutil.StatusPostFix
+		if cg.GoOptions.StatusPostFix != nil {
+			statusPostFix = *cg.GoOptions.StatusPostFix
+		}
+		cg.makeSeparateDirs(ir, statusPostFix)
+	}
+
 	// Range through the directories to find the enumerated and union types that we
 	// need. We have to do this without writing the code out, since we require some
 	// knowledge of these types to do code generation along with the values.
 	for _, directoryPath := range ir.OrderedDirectoryPathsByName() {
 		dir := ir.Directories[directoryPath]
-
 		// Generate structs.
 		if errs := checkForBinaryKeys(dir); len(errs) != 0 {
 			codegenErr = util.AppendErrs(codegenErr, errs)
 			continue
 		}
-		structOut, errs := writeGoStruct(dir, ir.Directories, generatedUnions, cg.GoOptions)
+
+		var additionalFields []*goStructField
+
+		namespace := ""
+		if modules != nil {
+			module := modules.Modules[dir.BelongingModule]
+			if module == nil {
+				for _, m := range modules.Modules {
+					module = m
+					break
+				}
+			}
+			namespace = module.Namespace.Name
+		}
+		// Generate XML serialization tags
+		if cg.GoOptions.GenerateXMLTag {
+			pathItems := strings.Split(dir.Path, "/")
+			yangName := pathItems[len(pathItems)-1]
+			tags := ""
+			if cg.GoOptions.GenerateJSONTag {
+				tags = `json:"-" xml:"` + namespace + ` ` + yangName + `"`
+			} else {
+				tags = `xml:"` + namespace + ` ` + yangName + `"`
+			}
+			additionalFields = append(additionalFields, &goStructField{
+				Name: "XMLName",
+				Type: xmlFieldType,
+				Tags: tags,
+			})
+		}
+		structOut, errs := writeGoStruct(dir, ir.Directories, generatedUnions, cg.GoOptions, additionalFields, mapper, namespace)
 		if errs != nil {
 			codegenErr = util.AppendErrs(codegenErr, errs)
 			continue
@@ -302,12 +361,11 @@ func (cg *CodeGenerator) Generate(yangFiles, includePaths []string) (*GeneratedC
 		}
 	}
 
-	processedEnums, err := genGoEnumeratedTypes(ir.Enums)
+	processedEnums, err := genGoEnumeratedTypes(ir.Enums, cg.GoOptions.GenerateEnumsString)
 	if err != nil {
 		return nil, append(codegenErr, err)
 	}
-
-	genum, err := writeGoEnumeratedTypes(processedEnums, usedEnumeratedTypes)
+	genum, err := writeGoEnumeratedTypes(processedEnums, usedEnumeratedTypes, nameDelimiter, cg.GoOptions.GenerateEnumsString)
 	if err != nil {
 		return nil, append(codegenErr, err)
 	}
@@ -366,13 +424,16 @@ type enumGeneratedCode struct {
 
 // genGoEnumeratedTypes converts the input map of EnumeratedYANGType objects to
 // another intermediate representation suitable for Go code generation.
-func genGoEnumeratedTypes(enums map[string]*ygen.EnumeratedYANGType) (map[string]*goEnumeratedType, error) {
+func genGoEnumeratedTypes(enums map[string]*ygen.EnumeratedYANGType, enumStr bool) (map[string]*goEnumeratedType, error) {
 	et := map[string]*goEnumeratedType{}
 	for _, e := range enums {
-		// initialised to be UNSET, such that it is possible to determine that the enumerated value
-		// was not modified.
-		values := map[int64]string{
-			0: "UNSET",
+		values := map[int64]string{}
+		if !enumStr {
+			// initialised to be UNSET, such that it is possible to determine that the enumerated value
+			// was not modified.
+			values = map[int64]string{
+				0: "UNSET",
+			}
 		}
 
 		// origValues stores the original set of value names, these are not maintained to be
@@ -386,8 +447,13 @@ func genGoEnumeratedTypes(enums map[string]*ygen.EnumeratedYANGType) (map[string
 		switch e.Kind {
 		case ygen.IdentityType, ygen.SimpleEnumerationType, ygen.DerivedEnumerationType, ygen.UnionEnumerationType, ygen.DerivedUnionEnumerationType:
 			for i, v := range e.ValToYANGDetails {
-				values[int64(i)+1] = safeGoEnumeratedValueName(v.Name)
-				origValues[int64(i)+1] = v
+				if enumStr {
+					values[int64(i)] = safeGoEnumeratedValueName(v.Name)
+					origValues[int64(i)] = v
+				} else {
+					values[int64(i)+1] = safeGoEnumeratedValueName(v.Name)
+					origValues[int64(i)+1] = v
+				}
 			}
 		default:
 			return nil, fmt.Errorf("unknown enumerated type %v", e.Kind)
@@ -404,7 +470,7 @@ func genGoEnumeratedTypes(enums map[string]*ygen.EnumeratedYANGType) (map[string
 
 // writeGoEnumeratedTypes generates Go code for the input enumerations if they
 // are present in the usedEnums map.
-func writeGoEnumeratedTypes(enums map[string]*goEnumeratedType, usedEnums map[string]bool) (*enumGeneratedCode, error) {
+func writeGoEnumeratedTypes(enums map[string]*goEnumeratedType, usedEnums map[string]bool, nameDelimiter string, enumTypeStr bool) (*enumGeneratedCode, error) {
 	orderedEnumNames := []string{}
 	for _, e := range enums {
 		orderedEnumNames = append(orderedEnumNames, e.Name)
@@ -416,13 +482,19 @@ func writeGoEnumeratedTypes(enums map[string]*goEnumeratedType, usedEnums map[st
 
 	for _, en := range orderedEnumNames {
 		e := enums[en]
-		if _, ok := usedEnums[fmt.Sprintf("%s%s", goEnumPrefix, e.Name)]; !ok {
+		if _, ok := usedEnums[fmt.Sprintf("%s%s", MakeGoEnumPrefix(nameDelimiter), e.Name)]; !ok {
 			// Don't output enumerated types that are not used in the code that we have
 			// such that we don't create generated code for a large array of types that
 			// just happen to be in modules that were included by other modules.
 			continue
 		}
-		enumOut, err := writeGoEnum(e)
+		var enumOut string
+		var err error
+		if enumTypeStr {
+			enumOut, err = writeGoEnumStr(e, nameDelimiter)
+		} else {
+			enumOut, err = writeGoEnum(e, nameDelimiter)
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -430,14 +502,135 @@ func writeGoEnumeratedTypes(enums map[string]*goEnumeratedType, usedEnums map[st
 		enumValMap[e.Name] = e.YANGValues
 	}
 
-	// Write the map of string -> int -> YANG enum name string out.
-	vmap, err := writeGoEnumMap(enumValMap)
-	if err != nil {
-		return nil, err
+	if !enumTypeStr {
+		// Write the map of string -> int -> YANG enum name string out.
+		vmap, err := writeGoEnumMap(enumValMap, nameDelimiter)
+		if err != nil {
+			return nil, err
+		}
+		return &enumGeneratedCode{
+			enums:  enumSnippets,
+			valMap: vmap,
+		}, nil
 	}
-
 	return &enumGeneratedCode{
 		enums:  enumSnippets,
-		valMap: vmap,
+		valMap: "",
 	}, nil
+}
+
+func (cg *CodeGenerator) makeSeparateDirs(ir *ygen.IR, statusPostFix string) {
+	configDirs, statusDirs := cg.makeDirPaths(ir)
+
+	// create config dir map without status fields
+	configDirMap := cg.cloneDirs(configDirs, ir, "")
+	cg.deleteSpamFields(configDirMap, false)
+
+	// create status dir map without config fields
+	statusDirMap := cg.cloneDirs(statusDirs, ir, statusPostFix)
+	cg.deleteSpamFields(statusDirMap, true)
+
+	//set status indicator
+	for _, dirPath := range statusDirMap {
+		dirPath.ConfigFalse = true
+	}
+
+	//change IR dirs to the union of config and status dirs
+	ir.Directories = configDirMap
+	for k, v := range statusDirMap {
+		ir.Directories[k] = v
+	}
+}
+
+// cloneDirs create clone dirs of dirPaths in ir, with given postFix
+func (cg *CodeGenerator) cloneDirs(dirPaths []string, ir *ygen.IR, postFix string) map[string]*ygen.ParsedDirectory {
+	dirMap := make(map[string]*ygen.ParsedDirectory)
+	for _, dirPath := range dirPaths {
+		dir := ir.Directories[dirPath]
+		clonedFields := make(map[string]*ygen.NodeDetails)
+		for k, field := range dir.Fields {
+			yangDetails := field.YANGDetails
+			yangDetails.Path = yangDetails.Path + postFix
+			clonedField := ygen.NodeDetails{
+				Name:                    field.Name,
+				YANGDetails:             yangDetails,
+				Type:                    field.Type,
+				LangType:                field.LangType,
+				MappedPaths:             field.MappedPaths,
+				MappedPathModules:       field.MappedPathModules,
+				ShadowMappedPaths:       field.ShadowMappedPaths,
+				ShadowMappedPathModules: field.ShadowMappedPathModules,
+				Flags:                   field.Flags,
+			}
+			clonedFields[k] = &clonedField
+		}
+		clonedDir := ygen.ParsedDirectory{
+			Name:              dir.Name + postFix,
+			Type:              dir.Type,
+			Path:              dir.Path,
+			Fields:            clonedFields,
+			ListKeys:          dir.ListKeys,
+			ListKeyYANGNames:  dir.ListKeyYANGNames,
+			PackageName:       dir.PackageName,
+			IsFakeRoot:        dir.IsFakeRoot,
+			BelongingModule:   dir.BelongingModule,
+			RootElementModule: dir.RootElementModule,
+			DefiningModule:    dir.DefiningModule,
+			ConfigFalse:       dir.ConfigFalse,
+		}
+		dirMap[dirPath+postFix] = &clonedDir
+	}
+	return dirMap
+}
+
+func (cg *CodeGenerator) deleteSpamFields(dirs map[string]*ygen.ParsedDirectory, configFalse bool) {
+	for _, dir := range dirs {
+		for k, field := range dir.Fields {
+			if field.Type == ygen.LeafNode || field.Type == ygen.LeafListNode {
+				if !configFalse && dir.ConfigFalse || configFalse && !dir.ConfigFalse {
+					delete(dir.Fields, k)
+				}
+			} else {
+				if _, ok := dirs[field.YANGDetails.Path]; !ok {
+					delete(dir.Fields, k)
+				}
+			}
+		}
+	}
+}
+
+func (cg *CodeGenerator) makeDirPaths(ir *ygen.IR) ([]string, []string) {
+	configDirs := make([]string, 0)
+	statusDirs := make([]string, 0)
+	for keyPath, dir := range ir.Directories {
+		if cg.GoOptions.SeparateStatus {
+			// ConfigFalse == true <=> YANG Statement: config false; <=> Part of the status
+			// Underneath config false node, no node can be config true
+			if dir.ConfigFalse {
+				statusDirs = cg.addNodePaths(statusDirs, keyPath, ir)
+			} else {
+				configDirs = cg.addNodePaths(configDirs, keyPath, ir)
+			}
+		} else {
+			configDirs = cg.addNodePaths(configDirs, keyPath, ir)
+		}
+	}
+	return configDirs, statusDirs
+}
+
+func (cg *CodeGenerator) addNodePaths(nodePaths []string, path string, ir *ygen.IR) []string {
+	if _, ok := ir.Directories[path]; ok {
+		for _, nodePath := range nodePaths {
+			if nodePath == path {
+				return nodePaths
+			}
+		}
+		nodePaths = append(nodePaths, path)
+	}
+
+	if strings.Count(path, "/") > 2 {
+		parentPath := path[:strings.LastIndex(path, "/")]
+		nodePaths = cg.addNodePaths(nodePaths, parentPath, ir)
+	}
+	return nodePaths
 }

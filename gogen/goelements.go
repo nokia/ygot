@@ -30,13 +30,6 @@ import (
 	"github.com/openconfig/ygot/ytypes"
 )
 
-const (
-	// goEnumPrefix is the prefix that is used for type names in the output
-	// Go code, such that an enumeration's name is of the form
-	//   <goEnumPrefix><EnumName>
-	goEnumPrefix string = "E_"
-)
-
 // unionConversionSpec stores snippets that convert primitive Go types to
 // union typedef types.
 type unionConversionSpec struct {
@@ -155,11 +148,20 @@ type GoLangMapper struct {
 	// UnimplementedLangMapperExt ensures GoLangMapper implements the
 	// LangMapperExt interface for forwards compatibility.
 	ygen.UnimplementedLangMapperExt
+
+	// goEnumPrefix is the prefix that is used for type names in the output
+	// Go code, such that an enumeration's name is of the form
+	//   <goEnumPrefix><EnumName>
+	goEnumPrefix string
+
+	nameDelimiter string //TODO new
+
+	enumStr bool //TODO new
 }
 
 // NewGoLangMapper creates a new GoLangMapper instance, initialised with the
 // default state required for code generation.
-func NewGoLangMapper(simpleUnions bool) *GoLangMapper {
+func NewGoLangMapper(simpleUnions bool, nameDelimiter string, enumStr bool) *GoLangMapper {
 	return &GoLangMapper{
 		definedGlobals: map[string]bool{
 			// Mark the name that is used for the binary type as a reserved name
@@ -169,7 +171,14 @@ func NewGoLangMapper(simpleUnions bool) *GoLangMapper {
 		},
 		uniqueDirectoryNames: map[string]string{},
 		simpleUnions:         simpleUnions,
+		goEnumPrefix:         MakeGoEnumPrefix(nameDelimiter),
+		nameDelimiter:        nameDelimiter,
+		enumStr:              enumStr,
 	}
+}
+
+func MakeGoEnumPrefix(nameDelimiter string) string {
+	return fmt.Sprintf("%s%s", "E", nameDelimiter)
 }
 
 // resolveTypeArgs is a structure used as an input argument to the yangTypeToGoType
@@ -191,7 +200,7 @@ type resolveTypeArgs struct {
 // pathToCamelCaseName takes an input yang.Entry and outputs its name as a Go
 // compatible name in the form PathElement1_PathElement2, performing schema
 // compression if required. The name is not checked for uniqueness.
-func pathToCamelCaseName(e *yang.Entry, compressOCPaths bool) string {
+func pathToCamelCaseName(e *yang.Entry, compressOCPaths bool, nameDelimiter string) string {
 	var pathElements []*yang.Entry
 
 	if igenutil.IsFakeRoot(e) {
@@ -220,7 +229,7 @@ func pathToCamelCaseName(e *yang.Entry, compressOCPaths bool) string {
 		idx := len(pathElements) - 1 - i
 		buf.WriteString(genutil.EntryCamelCaseName(pathElements[idx]))
 		if idx != 0 {
-			buf.WriteRune('_')
+			buf.WriteString(nameDelimiter)
 		}
 	}
 
@@ -236,7 +245,7 @@ func pathToCamelCaseName(e *yang.Entry, compressOCPaths bool) string {
 func (s *GoLangMapper) DirectoryName(e *yang.Entry, compressBehaviour genutil.CompressBehaviour) (string, error) {
 	// TODO(wenbli): Do not uniquify at this step -- rather do this in a
 	// later pass to avoid non-idempotent behaviour in GoLangMapper.
-	uniqName := genutil.MakeNameUnique(pathToCamelCaseName(e, compressBehaviour.CompressEnabled()), s.definedGlobals)
+	uniqName := genutil.MakeNameUnique(pathToCamelCaseName(e, compressBehaviour.CompressEnabled(), s.nameDelimiter), s.definedGlobals)
 
 	// Record the name of the struct that was unique such that it can be referenced
 	// by path.
@@ -260,7 +269,7 @@ func (s *GoLangMapper) LeafType(e *yang.Entry, opts ygen.IROptions) (*ygen.Mappe
 		return nil, err
 	}
 
-	defaultValue, err := generateGoDefaultValue(e, mtype, s, opts.TransformationOptions.CompressBehaviour.CompressEnabled(), opts.TransformationOptions.SkipEnumDeduplication, opts.TransformationOptions.ShortenEnumLeafNames, opts.TransformationOptions.UseDefiningModuleForTypedefEnumNames, opts.TransformationOptions.EnumOrgPrefixesToTrim, s.simpleUnions)
+	defaultValue, err := generateGoDefaultValue(e, mtype, s, opts.TransformationOptions.CompressBehaviour.CompressEnabled(), opts.TransformationOptions.SkipEnumDeduplication, opts.TransformationOptions.ShortenEnumLeafNames, opts.TransformationOptions.UseDefiningModuleForTypedefEnumNames, opts.TransformationOptions.EnumOrgPrefixesToTrim, s.simpleUnions, s.goEnumPrefix, s.nameDelimiter)
 	if err != nil {
 		return nil, err
 	}
@@ -294,7 +303,7 @@ func (s *GoLangMapper) PackageName(*yang.Entry, genutil.CompressBehaviour, bool)
 func (s *GoLangMapper) yangTypeToGoType(args resolveTypeArgs, compressOCPaths, skipEnumDedup, shortenEnumLeafNames, useDefiningModuleForTypedefEnumNames bool, enumOrgPrefixesToTrim []string) (*ygen.MappedType, error) {
 	defVal := genutil.TypeDefaultValue(args.yangType)
 	// Handle the case of a typedef which is actually an enumeration.
-	typedefName, _, isTypedef, err := s.EnumeratedTypedefTypeName(args.yangType, args.contextEntry, goEnumPrefix, false, useDefiningModuleForTypedefEnumNames)
+	typedefName, _, isTypedef, err := s.EnumeratedTypedefTypeName(args.yangType, args.contextEntry, s.goEnumPrefix, false, useDefiningModuleForTypedefEnumNames)
 	if err != nil {
 		// err is non nil when this was a typedef which included
 		// an invalid enumerated type.
@@ -356,10 +365,14 @@ func (s *GoLangMapper) yangTypeToGoType(args resolveTypeArgs, compressOCPaths, s
 		if err != nil {
 			return nil, err
 		}
+		zeroValue := "0"
+		if s.enumStr {
+			zeroValue = `""`
+		}
 		return &ygen.MappedType{
-			NativeType:        fmt.Sprintf("%s%s", goEnumPrefix, n),
+			NativeType:        fmt.Sprintf("%s%s", s.goEnumPrefix, n),
 			IsEnumeratedValue: true,
-			ZeroValue:         "0",
+			ZeroValue:         zeroValue,
 			DefaultValue:      defVal,
 		}, nil
 	case yang.Yidentityref:
@@ -374,7 +387,7 @@ func (s *GoLangMapper) yangTypeToGoType(args resolveTypeArgs, compressOCPaths, s
 			return nil, err
 		}
 		return &ygen.MappedType{
-			NativeType:        fmt.Sprintf("%s%s", goEnumPrefix, n),
+			NativeType:        fmt.Sprintf("%s%s", s.goEnumPrefix, n),
 			IsEnumeratedValue: true,
 			ZeroValue:         "0",
 			DefaultValue:      defVal,
@@ -460,7 +473,7 @@ func (s *GoLangMapper) goUnionType(args resolveTypeArgs, compressOCPaths, skipEn
 	}
 
 	resolvedType := &ygen.MappedType{
-		NativeType: fmt.Sprintf("%s_Union", pathToCamelCaseName(args.contextEntry, compressOCPaths)),
+		NativeType: fmt.Sprintf("%s%sUnion", pathToCamelCaseName(args.contextEntry, compressOCPaths, s.nameDelimiter), s.nameDelimiter),
 		// Zero value is set to nil, other than in cases where there is
 		// a single type in the union.
 		ZeroValue:    "nil",
@@ -512,7 +525,7 @@ func (s *GoLangMapper) goUnionSubTypes(subtype *yang.YangType, ctx *yang.Entry, 
 		}
 		defVal := genutil.TypeDefaultValue(subtype)
 		mtype = &ygen.MappedType{
-			NativeType:        fmt.Sprintf("%s%s", goEnumPrefix, baseType),
+			NativeType:        fmt.Sprintf("%s%s", s.goEnumPrefix, baseType),
 			IsEnumeratedValue: true,
 			ZeroValue:         "0",
 			DefaultValue:      defVal,
@@ -544,7 +557,7 @@ func (s *GoLangMapper) goUnionSubTypes(subtype *yang.YangType, ctx *yang.Entry, 
 // generateGoDefaultValue returns a pointer to a Go literal that represents the
 // default value for the entry. If there is no default value for the field, nil
 // is returned.
-func generateGoDefaultValue(field *yang.Entry, mtype *ygen.MappedType, gogen *GoLangMapper, compressPaths, skipEnumDedup, shortenEnumLeafNames, useDefiningModuleForTypedefEnumNames bool, enumOrgPrefixesToTrim []string, simpleUnions bool) (*string, error) {
+func generateGoDefaultValue(field *yang.Entry, mtype *ygen.MappedType, gogen *GoLangMapper, compressPaths, skipEnumDedup, shortenEnumLeafNames, useDefiningModuleForTypedefEnumNames bool, enumOrgPrefixesToTrim []string, unionsSupportDefault bool, goEnumPrefix, nameDelimiter string) (*string, error) {
 	// Set the default type to the mapped Go type.
 	defaultValues := field.DefaultValues()
 	if len(defaultValues) == 0 && mtype.DefaultValue != nil {
@@ -552,15 +565,15 @@ func generateGoDefaultValue(field *yang.Entry, mtype *ygen.MappedType, gogen *Go
 	}
 	for i, defVal := range defaultValues {
 		var err error
-		if defaultValues[i], _, err = gogen.yangDefaultValueToGo(defVal, resolveTypeArgs{yangType: field.Type, contextEntry: field}, len(mtype.UnionTypes) == 1, compressPaths, skipEnumDedup, shortenEnumLeafNames, useDefiningModuleForTypedefEnumNames, enumOrgPrefixesToTrim); err != nil {
+		if defaultValues[i], _, err = gogen.yangDefaultValueToGo(defVal, resolveTypeArgs{yangType: field.Type, contextEntry: field}, len(mtype.UnionTypes) == 1, compressPaths, skipEnumDedup, shortenEnumLeafNames, useDefiningModuleForTypedefEnumNames, enumOrgPrefixesToTrim, nameDelimiter); err != nil {
 			return nil, err
 		}
 	}
 	// TODO(wenbli): In ygot v1, we should no longer
 	// support the wrapper union generated code, so this if
 	// block would be obsolete.
-	if !simpleUnions {
-		defaultValues = goLeafDefaults(field, mtype)
+	if !unionsSupportDefault {
+		defaultValues = goLeafDefaults(field, mtype, goEnumPrefix, nameDelimiter)
 		if len(defaultValues) != 0 && len(mtype.UnionTypes) > 1 {
 			// If the default value is applied to a union type, we will generate
 			// non-compilable code when generating wrapper unions, so error out and inform
@@ -606,9 +619,9 @@ func generateGoDefaultValue(field *yang.Entry, mtype *ygen.MappedType, gogen *Go
 // The skipEnumDedup argument specifies whether leaves of type enumeration that are
 // used more than once in the schema should share a common type. By default, a single
 // type for each leaf is created.
-func (s *GoLangMapper) yangDefaultValueToGo(value string, args resolveTypeArgs, isSingletonUnion, compressOCPaths, skipEnumDedup, shortenEnumLeafNames, useDefiningModuleForTypedefEnumNames bool, enumOrgPrefixesToTrim []string) (string, yang.TypeKind, error) {
+func (s *GoLangMapper) yangDefaultValueToGo(value string, args resolveTypeArgs, isSingletonUnion, compressOCPaths, skipEnumDedup, shortenEnumLeafNames, useDefiningModuleForTypedefEnumNames bool, enumOrgPrefixesToTrim []string, nameDelimiter string) (string, yang.TypeKind, error) {
 	// Handle the case of a typedef which is actually an enumeration.
-	typedefName, _, isTypedef, err := s.EnumeratedTypedefTypeName(args.yangType, args.contextEntry, goEnumPrefix, false, useDefiningModuleForTypedefEnumNames)
+	typedefName, _, isTypedef, err := s.EnumeratedTypedefTypeName(args.yangType, args.contextEntry, s.goEnumPrefix, nameDelimiter != "_", useDefiningModuleForTypedefEnumNames)
 	if err != nil {
 		// err is non nil when this was a typedef which included
 		// an invalid enumerated type.
@@ -628,7 +641,7 @@ func (s *GoLangMapper) yangDefaultValueToGo(value string, args resolveTypeArgs, 
 				return "", yang.Ynone, fmt.Errorf("default value conversion: typedef identity value %q not found in enum with type name %q", value, args.yangType.Name)
 			}
 		}
-		return enumDefaultValue(typedefName, value, goEnumPrefix), args.yangType.Kind, nil
+		return enumDefaultValue(typedefName, value, s.goEnumPrefix, s.nameDelimiter), args.yangType.Kind, nil
 	}
 
 	signed := false
@@ -680,7 +693,7 @@ func (s *GoLangMapper) yangDefaultValueToGo(value string, args resolveTypeArgs, 
 		value := fmt.Sprintf(ygot.BinaryTypeName+"(%q)", value)
 		return value, ykind, nil
 	case yang.Ystring:
-		if err := ytypes.ValidateStringRestrictions(args.yangType, value); err != nil {
+		if err := ValidateStringRestrictions(args.yangType, value); err != nil {
 			return "", yang.Ynone, fmt.Errorf("default value conversion: %q doesn't match string restrictions: %v", value, err)
 		}
 		value := fmt.Sprintf("%q", value)
@@ -710,7 +723,7 @@ func (s *GoLangMapper) yangDefaultValueToGo(value string, args resolveTypeArgs, 
 		if err != nil {
 			return "", yang.Ynone, err
 		}
-		return enumDefaultValue(n, value, ""), ykind, nil
+		return enumDefaultValue(n, value, "", s.nameDelimiter), ykind, nil
 	case yang.Yidentityref:
 		// Identityref leaves are mapped according to the base identity that they
 		// refer to - this is stored in the IdentityBase field of the context leaf
@@ -728,7 +741,7 @@ func (s *GoLangMapper) yangDefaultValueToGo(value string, args resolveTypeArgs, 
 		if err != nil {
 			return "", yang.Ynone, err
 		}
-		return enumDefaultValue(n, value, ""), ykind, nil
+		return enumDefaultValue(n, value, "", s.nameDelimiter), ykind, nil
 	case yang.Yleafref:
 		// This is a leafref, so we check what the type of the leaf that it
 		// references is by looking it up.
@@ -736,11 +749,11 @@ func (s *GoLangMapper) yangDefaultValueToGo(value string, args resolveTypeArgs, 
 		if err != nil {
 			return "", yang.Ynone, err
 		}
-		return s.yangDefaultValueToGo(value, resolveTypeArgs{yangType: target.Type, contextEntry: target}, isSingletonUnion, compressOCPaths, skipEnumDedup, shortenEnumLeafNames, useDefiningModuleForTypedefEnumNames, enumOrgPrefixesToTrim)
+		return s.yangDefaultValueToGo(value, resolveTypeArgs{yangType: target.Type, contextEntry: target}, isSingletonUnion, compressOCPaths, skipEnumDedup, shortenEnumLeafNames, useDefiningModuleForTypedefEnumNames, enumOrgPrefixesToTrim, s.nameDelimiter)
 	case yang.Yunion:
 		// Try to convert to each type in order, but try the enumerated types first.
 		for _, t := range util.FlattenedTypes(args.yangType.Type) {
-			snippet, convertedKind, err := s.yangDefaultValueToGo(value, resolveTypeArgs{yangType: t, contextEntry: args.contextEntry}, isSingletonUnion, compressOCPaths, skipEnumDedup, shortenEnumLeafNames, useDefiningModuleForTypedefEnumNames, enumOrgPrefixesToTrim)
+			snippet, convertedKind, err := s.yangDefaultValueToGo(value, resolveTypeArgs{yangType: t, contextEntry: args.contextEntry}, isSingletonUnion, compressOCPaths, skipEnumDedup, shortenEnumLeafNames, useDefiningModuleForTypedefEnumNames, enumOrgPrefixesToTrim, s.nameDelimiter)
 			if err == nil {
 				if !isSingletonUnion {
 					if simpleName, ok := simpleUnionConversionsFromKind[convertedKind]; ok {

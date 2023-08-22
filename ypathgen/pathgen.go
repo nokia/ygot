@@ -273,7 +273,7 @@ func (cg *GenConfig) GeneratePathCode(yangFiles, includePaths []string) (map[str
 	}
 
 	var errs util.Errors
-	ir, err := ygen.GenerateIR(yangFiles, includePaths, goLangMapper{GoLangMapper: gogen.NewGoLangMapper(true)}, opts)
+	ir, err := ygen.GenerateIR(yangFiles, includePaths, goLangMapper{GoLangMapper: gogen.NewGoLangMapper(true, "_", false)}, opts)
 	if err != nil {
 		return nil, nil, util.AppendErr(errs, err)
 	}

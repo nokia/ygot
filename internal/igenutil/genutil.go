@@ -36,6 +36,8 @@ const (
 	// DefaultRootName is the default name for the root structure if GenerateFakeRoot is
 	// set to true.
 	DefaultRootName = "device"
+
+	StatusPostFix = "Status" //TODO New
 )
 
 var (
@@ -110,4 +112,29 @@ func MappableLeaf(e *yang.Entry) *yang.Entry {
 		return e
 	}
 	return nil
+}
+
+func Convert2CamelCase(str string) string {
+	ret := bytes.Buffer{}
+	inBody := false
+	for _, c := range str {
+		char := string(c)
+		if char == "_" || char == "-" {
+			inBody = true
+		} else if inBody {
+			inBody = false
+			if ret.Len() == 0 {
+				ret.WriteString(strings.ToLower(char))
+			} else {
+				ret.WriteString(strings.ToUpper(char))
+			}
+		} else {
+			if ret.Len() == 0 {
+				ret.WriteString(strings.ToLower(char))
+			} else {
+				ret.WriteString(char)
+			}
+		}
+	}
+	return ret.String()
 }

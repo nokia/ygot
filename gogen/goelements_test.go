@@ -16,6 +16,7 @@ package gogen
 
 import (
 	"encoding/base64"
+	"github.com/openconfig/ygot/internal/igenutil"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -23,7 +24,6 @@ import (
 	"github.com/kylelemons/godebug/pretty"
 	"github.com/openconfig/goyang/pkg/yang"
 	"github.com/openconfig/ygot/genutil"
-	"github.com/openconfig/ygot/internal/igenutil"
 	"github.com/openconfig/ygot/ygen"
 	"github.com/openconfig/ygot/ygot"
 )
@@ -442,7 +442,7 @@ func TestUnionSubTypes(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewGoLangMapper(true)
+			s := NewGoLangMapper(true, "_", false)
 			if err := s.InjectEnumSet(enumMapFromEntry(tt.inCtxEntry), false, false, false, true, true, true, nil); err != nil {
 				t.Fatal(err)
 			}
@@ -1090,7 +1090,7 @@ func TestYangTypeToGoType(t *testing.T) {
 				tt.in = tt.ctx.Type
 			}
 
-			s := NewGoLangMapper(true)
+			s := NewGoLangMapper(true, "_", false)
 			enumMap := enumMapFromEntries(tt.inEnumEntries)
 			addEnumsToEnumMap(tt.ctx, enumMap)
 			if err := s.InjectEnumSet(enumMap, tt.inCompressPath, false, tt.inSkipEnumDedup, true, true, true, nil); err != nil {
@@ -1267,7 +1267,7 @@ func TestStructName(t *testing.T) {
 
 	for _, tt := range tests {
 		for compress, expected := range map[genutil.CompressBehaviour]string{genutil.Uncompressed: tt.wantUncompressed, genutil.PreferIntendedConfig: tt.wantCompressed} {
-			s := NewGoLangMapper(true)
+			s := NewGoLangMapper(true, "_", false)
 			if out, err := s.DirectoryName(tt.inElement, compress); err != nil {
 				t.Errorf("%s (compress: %v): got unexpected error: %v", tt.name, compress, err)
 			} else if out != expected {
@@ -1513,7 +1513,7 @@ func TestTypeResolutionManyToOne(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewGoLangMapper(true)
+			s := NewGoLangMapper(true, "_", false)
 			if err := s.InjectEnumSet(enumMapFromEntries(tt.inLeaves), tt.inCompressOCPaths, false, tt.inSkipEnumDedup, true, true, true, nil); err != nil {
 				t.Fatalf("findEnumSet failed: %v", err)
 			}
@@ -2515,7 +2515,7 @@ func TestYangDefaultValueToGo(t *testing.T) {
 
 			// --- Test ---
 			t.Run(tt.name, func(t *testing.T) {
-				s := NewGoLangMapper(true)
+				s := NewGoLangMapper(true, "_", false)
 				enumMap := enumMapFromEntries(tt.inEnumEntries)
 				addEnumsToEnumMap(tt.inCtx, enumMap)
 				if err := s.InjectEnumSet(enumMap, tt.inCompressPath, false, tt.inSkipEnumDedup, true, true, true, nil); err != nil {
@@ -2536,7 +2536,7 @@ func TestYangDefaultValueToGo(t *testing.T) {
 					contextEntry: tt.inCtx,
 				}
 
-				got, gotKind, err := s.yangDefaultValueToGo(tt.inValue, args, false, tt.inCompressPath, tt.inSkipEnumDedup, true, true, nil)
+				got, gotKind, err := s.yangDefaultValueToGo(tt.inValue, args, false, tt.inCompressPath, tt.inSkipEnumDedup, true, true, nil, "_")
 				if tt.wantErr && err == nil {
 					t.Fatalf("did not get expected error (%v)", got)
 				} else if !tt.wantErr && err != nil {
@@ -2872,7 +2872,7 @@ func TestYangDefaultValueToGo(t *testing.T) {
 
 		// --- Test ---
 		t.Run("singleton union "+tt.name, func(t *testing.T) {
-			s := NewGoLangMapper(true)
+			s := NewGoLangMapper(true, "_", false)
 			enumMap := enumMapFromEntries(tt.inEnumEntries)
 			addEnumsToEnumMap(tt.inCtx, enumMap)
 			if err := s.InjectEnumSet(enumMap, tt.inCompressPath, false, tt.inSkipEnumDedup, true, true, true, nil); err != nil {
@@ -2893,7 +2893,7 @@ func TestYangDefaultValueToGo(t *testing.T) {
 				contextEntry: tt.inCtx,
 			}
 
-			got, gotKind, err := s.yangDefaultValueToGo(tt.inValue, args, true, tt.inCompressPath, tt.inSkipEnumDedup, true, true, nil)
+			got, gotKind, err := s.yangDefaultValueToGo(tt.inValue, args, true, tt.inCompressPath, tt.inSkipEnumDedup, true, true, nil, "_")
 			if tt.wantErr && err == nil {
 				t.Fatalf("did not get expected error (%v)", got)
 			} else if !tt.wantErr && err != nil {

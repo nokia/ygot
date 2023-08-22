@@ -29,8 +29,8 @@ message BgpRib {
                 openconfig.enums.OpenconfigRibBgpTypesINVALIDROUTEREASON invalid_reason = 259513288 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/loc-rib/routes/route/state/invalid-reason"];
                 ywrapper.UintValue last_modified = 32947458 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/loc-rib/routes/route/state/last-modified"];
                 oneof origin {
-                  openconfig.enums.OpenconfigPolicyTypesINSTALLPROTOCOLTYPE origin_openconfigpolicytypesinstallprotocoltype = 521134615;
-                  string origin_string = 77131532;
+                  openconfig.enums.OpenconfigPolicyTypesINSTALLPROTOCOLTYPE origin_openconfigpolicytypesinstallprotocoltype = 521134615 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/loc-rib/routes/route/state/origin"];
+                  string origin_string = 77131532 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/loc-rib/routes/route/state/origin"];
                 }
                 ywrapper.UintValue path_id = 346893675 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/loc-rib/routes/route/state/path-id"];
                 ywrapper.StringValue prefix = 242977882 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/loc-rib/routes/route/state/prefix"];
@@ -59,12 +59,12 @@ message BgpRib {
               UnknownAttributes unknown_attributes = 531222128 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/loc-rib/routes/route/unknown-attributes"];
             }
             message RouteKey {
-              string prefix = 1 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/loc-rib/routes/route/prefix"];
               oneof origin {
-                openconfig.enums.OpenconfigPolicyTypesINSTALLPROTOCOLTYPE origin_openconfigpolicytypesinstallprotocoltype = 521134615;
-                string origin_string = 77131532;
+                openconfig.enums.OpenconfigPolicyTypesINSTALLPROTOCOLTYPE origin_openconfigpolicytypesinstallprotocoltype = 521134615 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/loc-rib/routes/route/origin"];
+                string origin_string = 77131532 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/loc-rib/routes/route/origin"];
               }
-              uint64 path_id = 3 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/loc-rib/routes/route/path-id"];
+              uint64 path_id = 2 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/loc-rib/routes/route/path-id"];
+              string prefix = 3 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/loc-rib/routes/route/prefix"];
               Route route = 4;
             }
             repeated RouteKey route = 492966521 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/loc-rib/routes/route"];
@@ -113,8 +113,8 @@ message BgpRib {
                   UnknownAttributes unknown_attributes = 269146021 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-in-post/routes/route/unknown-attributes"];
                 }
                 message RouteKey {
-                  string prefix = 1 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-in-post/routes/route/prefix"];
-                  uint64 path_id = 2 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-in-post/routes/route/path-id"];
+                  uint64 path_id = 1 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-in-post/routes/route/path-id"];
+                  string prefix = 2 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-in-post/routes/route/prefix"];
                   Route route = 3;
                 }
                 repeated RouteKey route = 455055402 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-in-post/routes/route"];
@@ -160,8 +160,8 @@ message BgpRib {
                   UnknownAttributes unknown_attributes = 315025570 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-in-pre/routes/route/unknown-attributes"];
                 }
                 message RouteKey {
-                  string prefix = 1 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-in-pre/routes/route/prefix"];
-                  uint64 path_id = 2 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-in-pre/routes/route/path-id"];
+                  uint64 path_id = 1 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-in-pre/routes/route/path-id"];
+                  string prefix = 2 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-in-pre/routes/route/prefix"];
                   Route route = 3;
                 }
                 repeated RouteKey route = 226589255 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-in-pre/routes/route"];
@@ -207,8 +207,8 @@ message BgpRib {
                   UnknownAttributes unknown_attributes = 284206804 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-out-post/routes/route/unknown-attributes"];
                 }
                 message RouteKey {
-                  string prefix = 1 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-out-post/routes/route/prefix"];
-                  uint64 path_id = 2 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-out-post/routes/route/path-id"];
+                  uint64 path_id = 1 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-out-post/routes/route/path-id"];
+                  string prefix = 2 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-out-post/routes/route/prefix"];
                   Route route = 3;
                 }
                 repeated RouteKey route = 182754797 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-out-post/routes/route"];
@@ -254,8 +254,8 @@ message BgpRib {
                   UnknownAttributes unknown_attributes = 528635933 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-out-pre/routes/route/unknown-attributes"];
                 }
                 message RouteKey {
-                  string prefix = 1 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-out-pre/routes/route/prefix"];
-                  uint64 path_id = 2 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-out-pre/routes/route/path-id"];
+                  uint64 path_id = 1 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-out-pre/routes/route/path-id"];
+                  string prefix = 2 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-out-pre/routes/route/prefix"];
                   Route route = 3;
                 }
                 repeated RouteKey route = 28417138 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv4-unicast/neighbors/neighbor/adj-rib-out-pre/routes/route"];
@@ -294,8 +294,8 @@ message BgpRib {
                 openconfig.enums.OpenconfigRibBgpTypesINVALIDROUTEREASON invalid_reason = 468268730 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/loc-rib/routes/route/state/invalid-reason"];
                 ywrapper.UintValue last_modified = 371385156 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/loc-rib/routes/route/state/last-modified"];
                 oneof origin {
-                  openconfig.enums.OpenconfigPolicyTypesINSTALLPROTOCOLTYPE origin_openconfigpolicytypesinstallprotocoltype = 465497525;
-                  string origin_string = 376223214;
+                  openconfig.enums.OpenconfigPolicyTypesINSTALLPROTOCOLTYPE origin_openconfigpolicytypesinstallprotocoltype = 465497525 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/loc-rib/routes/route/state/origin"];
+                  string origin_string = 376223214 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/loc-rib/routes/route/state/origin"];
                 }
                 ywrapper.UintValue path_id = 347750169 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/loc-rib/routes/route/state/path-id"];
                 ywrapper.StringValue prefix = 369963996 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/loc-rib/routes/route/state/prefix"];
@@ -324,12 +324,12 @@ message BgpRib {
               UnknownAttributes unknown_attributes = 275474750 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/loc-rib/routes/route/unknown-attributes"];
             }
             message RouteKey {
-              string prefix = 1 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/loc-rib/routes/route/prefix"];
               oneof origin {
-                openconfig.enums.OpenconfigPolicyTypesINSTALLPROTOCOLTYPE origin_openconfigpolicytypesinstallprotocoltype = 465497525;
-                string origin_string = 376223214;
+                openconfig.enums.OpenconfigPolicyTypesINSTALLPROTOCOLTYPE origin_openconfigpolicytypesinstallprotocoltype = 465497525 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/loc-rib/routes/route/origin"];
+                string origin_string = 376223214 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/loc-rib/routes/route/origin"];
               }
-              uint64 path_id = 3 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/loc-rib/routes/route/path-id"];
+              uint64 path_id = 2 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/loc-rib/routes/route/path-id"];
+              string prefix = 3 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/loc-rib/routes/route/prefix"];
               Route route = 4;
             }
             repeated RouteKey route = 523030147 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/loc-rib/routes/route"];
@@ -378,8 +378,8 @@ message BgpRib {
                   UnknownAttributes unknown_attributes = 424914787 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-in-post/routes/route/unknown-attributes"];
                 }
                 message RouteKey {
-                  string prefix = 1 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-in-post/routes/route/prefix"];
-                  uint64 path_id = 2 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-in-post/routes/route/path-id"];
+                  uint64 path_id = 1 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-in-post/routes/route/path-id"];
+                  string prefix = 2 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-in-post/routes/route/prefix"];
                   Route route = 3;
                 }
                 repeated RouteKey route = 496468540 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-in-post/routes/route"];
@@ -422,8 +422,8 @@ message BgpRib {
                   UnknownAttributes unknown_attributes = 193894184 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-in-pre/routes/route/unknown-attributes"];
                 }
                 message RouteKey {
-                  string prefix = 1 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-in-pre/routes/route/prefix"];
-                  uint64 path_id = 2 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-in-pre/routes/route/path-id"];
+                  uint64 path_id = 1 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-in-pre/routes/route/path-id"];
+                  string prefix = 2 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-in-pre/routes/route/prefix"];
                   Route route = 3;
                 }
                 repeated RouteKey route = 133139169 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-in-pre/routes/route"];
@@ -466,8 +466,8 @@ message BgpRib {
                   UnknownAttributes unknown_attributes = 9623054 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-out-post/routes/route/unknown-attributes"];
                 }
                 message RouteKey {
-                  string prefix = 1 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-out-post/routes/route/prefix"];
-                  uint64 path_id = 2 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-out-post/routes/route/path-id"];
+                  uint64 path_id = 1 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-out-post/routes/route/path-id"];
+                  string prefix = 2 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-out-post/routes/route/prefix"];
                   Route route = 3;
                 }
                 repeated RouteKey route = 412928307 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-out-post/routes/route"];
@@ -510,8 +510,8 @@ message BgpRib {
                   UnknownAttributes unknown_attributes = 265378175 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-out-pre/routes/route/unknown-attributes"];
                 }
                 message RouteKey {
-                  string prefix = 1 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-out-pre/routes/route/prefix"];
-                  uint64 path_id = 2 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-out-pre/routes/route/path-id"];
+                  uint64 path_id = 1 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-out-pre/routes/route/path-id"];
+                  string prefix = 2 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-out-pre/routes/route/prefix"];
                   Route route = 3;
                 }
                 repeated RouteKey route = 349780136 [(yext.schemapath) = "/bgp-rib/afi-safis/afi-safi/ipv6-unicast/neighbors/neighbor/adj-rib-out-pre/routes/route"];
@@ -562,7 +562,7 @@ message BgpRib {
       message As4Path {
         message Segment {
           message State {
-            repeated ywrapper.UintValue member = 361324129 [(yext.schemapath) = "/bgp-rib/attr-sets/attr-set/as4-path/segment/state/member"];
+            repeated ywrapper.UintValue member = 361324129 [(yext.leaflist) = true,(yext.schemapath) = "/bgp-rib/attr-sets/attr-set/as4-path/segment/state/member"];
             openconfig.enums.OpenconfigBgpTypesAsPathSegmentType type = 138477295 [(yext.schemapath) = "/bgp-rib/attr-sets/attr-set/as4-path/segment/state/type"];
           }
           State state = 183426056 [(yext.schemapath) = "/bgp-rib/attr-sets/attr-set/as4-path/segment/state"];
@@ -572,7 +572,7 @@ message BgpRib {
       message AsPath {
         message Segment {
           message State {
-            repeated ywrapper.UintValue member = 390574813 [(yext.schemapath) = "/bgp-rib/attr-sets/attr-set/as-path/segment/state/member"];
+            repeated ywrapper.UintValue member = 390574813 [(yext.leaflist) = true,(yext.schemapath) = "/bgp-rib/attr-sets/attr-set/as-path/segment/state/member"];
             openconfig.enums.OpenconfigBgpTypesAsPathSegmentType type = 334992795 [(yext.schemapath) = "/bgp-rib/attr-sets/attr-set/as-path/segment/state/type"];
           }
           State state = 118106132 [(yext.schemapath) = "/bgp-rib/attr-sets/attr-set/as-path/segment/state"];
@@ -582,7 +582,7 @@ message BgpRib {
       message State {
         ywrapper.UintValue aigp = 363380265 [(yext.schemapath) = "/bgp-rib/attr-sets/attr-set/state/aigp"];
         ywrapper.BoolValue atomic_aggregate = 20428863 [(yext.schemapath) = "/bgp-rib/attr-sets/attr-set/state/atomic-aggregate"];
-        repeated ywrapper.StringValue cluster_list = 312146437 [(yext.schemapath) = "/bgp-rib/attr-sets/attr-set/state/cluster-list"];
+        repeated ywrapper.StringValue cluster_list = 312146437 [(yext.leaflist) = true,(yext.schemapath) = "/bgp-rib/attr-sets/attr-set/state/cluster-list"];
         ywrapper.UintValue index = 515942798 [(yext.schemapath) = "/bgp-rib/attr-sets/attr-set/state/index"];
         ywrapper.UintValue local_pref = 525049791 [(yext.schemapath) = "/bgp-rib/attr-sets/attr-set/state/local-pref"];
         ywrapper.UintValue med = 251657528 [(yext.schemapath) = "/bgp-rib/attr-sets/attr-set/state/med"];
@@ -605,11 +605,11 @@ message BgpRib {
     message Community {
       message State {
         message CommunityUnion {
-          openconfig.enums.OpenconfigBgpTypesBGPWELLKNOWNSTDCOMMUNITY community_openconfigbgptypesbgpwellknownstdcommunity = 181609153;
-          string community_string = 486091916;
-          uint64 community_uint64 = 61537173;
+          openconfig.enums.OpenconfigBgpTypesBGPWELLKNOWNSTDCOMMUNITY community_openconfigbgptypesbgpwellknownstdcommunity = 181609153 [(yext.schemapath) = "/bgp-rib/communities/community/state/community"];
+          string community_string = 486091916 [(yext.schemapath) = "/bgp-rib/communities/community/state/community"];
+          uint64 community_uint64 = 61537173 [(yext.schemapath) = "/bgp-rib/communities/community/state/community"];
         }
-        repeated CommunityUnion community = 369233892 [(yext.schemapath) = "/bgp-rib/communities/community/state/community"];
+        repeated CommunityUnion community = 369233892 [(yext.leaflistunion) = true,(yext.schemapath) = "/bgp-rib/communities/community/state/community"];
         ywrapper.UintValue index = 113519803 [(yext.schemapath) = "/bgp-rib/communities/community/state/index"];
       }
       State state = 40768834 [(yext.schemapath) = "/bgp-rib/communities/community/state"];
@@ -624,10 +624,10 @@ message BgpRib {
     message ExtCommunity {
       message State {
         message ExtCommunityUnion {
-          bytes ext_community_bytes = 410295638;
-          string ext_community_string = 123223126;
+          bytes ext_community_bytes = 410295638 [(yext.schemapath) = "/bgp-rib/ext-communities/ext-community/state/ext-community"];
+          string ext_community_string = 123223126 [(yext.schemapath) = "/bgp-rib/ext-communities/ext-community/state/ext-community"];
         }
-        repeated ExtCommunityUnion ext_community = 317762854 [(yext.schemapath) = "/bgp-rib/ext-communities/ext-community/state/ext-community"];
+        repeated ExtCommunityUnion ext_community = 317762854 [(yext.leaflistunion) = true,(yext.schemapath) = "/bgp-rib/ext-communities/ext-community/state/ext-community"];
         ywrapper.UintValue index = 174612859 [(yext.schemapath) = "/bgp-rib/ext-communities/ext-community/state/index"];
       }
       State state = 467292802 [(yext.schemapath) = "/bgp-rib/ext-communities/ext-community/state"];

@@ -42,7 +42,7 @@ func safeGoEnumeratedValueName(name string) string {
 // (allowing removal of the enumeration type prefix if required). The default
 // value in the form <sanitised_baseName>_<sanitised_defVal> is returned as
 // a pointer.
-func enumDefaultValue(baseName, defVal, prefix string) string {
+func enumDefaultValue(baseName, defVal, prefix, nameDelimiter string) string {
 	if strings.Contains(defVal, ":") {
 		defVal = strings.Split(defVal, ":")[1]
 	}
@@ -53,5 +53,5 @@ func enumDefaultValue(baseName, defVal, prefix string) string {
 
 	defVal = safeGoEnumeratedValueName(defVal)
 
-	return fmt.Sprintf("%s_%s", baseName, defVal)
+	return fmt.Sprintf("%s%s%s", baseName, nameDelimiter, defVal)
 }

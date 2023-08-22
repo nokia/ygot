@@ -54,7 +54,7 @@ func TestGenerateIR(t *testing.T) {
 			filepath.Join(datapath, "openconfig-simple.yang"),
 			filepath.Join(datapath, "openconfig-simple-augment2.yang"),
 		},
-		inLangMapper: goLangMapper{GoLangMapper: NewGoLangMapper(true)},
+		inLangMapper: goLangMapper{GoLangMapper: NewGoLangMapper(true, "_", false)},
 		inOpts: ygen.IROptions{
 			TransformationOptions: ygen.TransformationOpts{
 				CompressBehaviour:                    genutil.PreferIntendedConfig,
@@ -345,7 +345,7 @@ func TestGenerateIR(t *testing.T) {
 			filepath.Join(datapath, "openconfig-simple.yang"),
 			filepath.Join(datapath, "openconfig-simple-augment2.yang"),
 		},
-		inLangMapper: NewGoLangMapper(true),
+		inLangMapper: NewGoLangMapper(true, "_", false),
 		inOpts: ygen.IROptions{
 			TransformationOptions: ygen.TransformationOpts{
 				CompressBehaviour:                    genutil.PreferOperationalState,
@@ -631,7 +631,7 @@ func TestGenerateIR(t *testing.T) {
 			filepath.Join(datapath, "openconfig-simple.yang"),
 			filepath.Join(datapath, "openconfig-simple-augment2.yang"),
 		},
-		inLangMapper: NewGoLangMapper(true),
+		inLangMapper: NewGoLangMapper(true, "_", false),
 		inOpts: ygen.IROptions{
 			TransformationOptions: ygen.TransformationOpts{
 				CompressBehaviour:                    genutil.Uncompressed,
@@ -1136,7 +1136,7 @@ func TestGenerateIR(t *testing.T) {
 		desc:             "exclude module test with compression",
 		inYANGFiles:      []string{filepath.Join(datapath, "excluded-module-noimport.yang")},
 		inExcludeModules: []string{"excluded-module-two"},
-		inLangMapper:     NewGoLangMapper(true),
+		inLangMapper:     NewGoLangMapper(true, "_", false),
 		inOpts: ygen.IROptions{
 			TransformationOptions: ygen.TransformationOpts{
 				CompressBehaviour:                    genutil.PreferIntendedConfig,
@@ -1190,7 +1190,7 @@ func TestGenerateIR(t *testing.T) {
 	}, {
 		desc:         "complex openconfig test with compression",
 		inYANGFiles:  []string{filepath.Join(datapath, "openconfig-complex.yang")},
-		inLangMapper: NewGoLangMapper(true),
+		inLangMapper: NewGoLangMapper(true, "_", false),
 		inOpts: ygen.IROptions{
 			TransformationOptions: ygen.TransformationOpts{
 				CompressBehaviour:                    genutil.PreferIntendedConfig,

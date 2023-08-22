@@ -538,6 +538,7 @@ func TestSimpleStructs(t *testing.T) {
 	}, {
 		name:                "structs test with choices and cases",
 		inFiles:             []string{filepath.Join(datapath, "choice-case-example.yang")},
+		inConfig:            CodeGenerator{},
 		wantStructsCodeFile: filepath.Join(TestRoot, "testdata/structs/choice-case-example.formatted-txt"),
 	}, {
 		name: "module with augments",
@@ -604,6 +605,7 @@ func TestSimpleStructs(t *testing.T) {
 	}, {
 		name:                "module with empty leaf",
 		inFiles:             []string{filepath.Join(datapath, "empty.yang")},
+		inConfig:            CodeGenerator{},
 		wantStructsCodeFile: filepath.Join(TestRoot, "testdata/structs/empty.formatted-txt"),
 	}, {
 		name:             "module with excluded modules",
