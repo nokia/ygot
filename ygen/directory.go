@@ -317,21 +317,20 @@ func generateExtensionTags(field *yang.Entry) string {
 	// Revisit once goyang is updated.
 	if field.IsLeaf() {
 		leafNode := field.Node.(*yang.Leaf)
-		if len(leafNode.Type.Extensions) != 0 {
-			extensions = append(extensions, leafNode.Type.Extensions...)
-		}
+		extensions = append(extensions, genutil.GetTypeExtensions(leafNode.Type, "")...)
 	}
 
 	uniqueExtKeywordArgs := map[uniqueExtParams]struct{}{}
 	if len(extensions) != 0 {
 		buf.WriteString(` extensions:"`)
 		for iter, extension := range extensions {
-			e := uniqueExtParams{keyword: extension.Keyword, argument: extension.Argument}
+			kwd := util.StripModulePrefix(extension.Keyword)
+			e := uniqueExtParams{keyword: kwd, argument: extension.Argument}
 			if _, present := uniqueExtKeywordArgs[e]; present {
 				continue
 			}
 			uniqueExtKeywordArgs[e] = struct{}{}
-			buf.WriteString(extension.Keyword)
+			buf.WriteString(kwd)
 			if extension.HasArgument {
 				buf.WriteString(fmt.Sprintf(",%s", extension.Argument))
 			}
