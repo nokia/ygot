@@ -473,7 +473,7 @@ func TestRemoveXPATHPredicates(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
-			got, err := removeXPATHPredicates(tt.in)
+			got, err := RemoveXPATHPredicates(tt.in)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("removeXPATHPredicates(%s): got unexpected error, got: %v", tt.in, err)
 			}
@@ -850,7 +850,6 @@ func TestStripModulePrefix(t *testing.T) {
 			if got, want := StripModulePrefix(tt.inName), tt.wantName; got != want {
 				t.Errorf("StripModulePrefix(%v): did not get expected name, got: %s, want: %s", tt.inName, got, want)
 			}
-
 		})
 	}
 }
@@ -945,7 +944,6 @@ func TestReplacePathSuffix(t *testing.T) {
 			if got != tt.wantName {
 				t.Errorf("ReplacePathSuffix(%v, %v): did not get expected name, got: %s, want: %s", tt.inName, tt.inNewSuffix, got, tt.wantName)
 			}
-
 		})
 	}
 }
