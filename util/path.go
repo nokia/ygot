@@ -223,9 +223,9 @@ func firstMatching(schema *yang.Entry, path []string) *yang.Entry {
 	return s
 }
 
-// removeXPATHPredicates removes predicates from an XPath string. e.g.,
-// removeXPATHPredicates(/foo/bar[name="foo"]/config/baz -> /foo/bar/config/baz.
-func removeXPATHPredicates(s string) (string, error) {
+// RemoveXPATHPredicates removes predicates from an XPath string. e.g.,
+// RemoveXPATHPredicates(/foo/bar[name="foo"]/config/baz) -> /foo/bar/config/baz.
+func RemoveXPATHPredicates(s string) (string, error) {
 	var b bytes.Buffer
 	for i := 0; i < len(s); {
 		ss := s[i:]
@@ -266,7 +266,7 @@ func FindLeafRefSchema(schema *yang.Entry, pathStr string) (*yang.Entry, error) 
 	}
 
 	refSchema := schema
-	pathStr, err := removeXPATHPredicates(pathStr)
+	pathStr, err := RemoveXPATHPredicates(pathStr)
 	if err != nil {
 		return nil, err
 	}
